@@ -1,0 +1,257 @@
+int num = 7;
+float sx = 0;
+float sy = 0;
+float dimentions;
+
+boolean finishedWithStart = false;
+boolean finishedWithFinish = false;
+
+int[][] squareValues;
+int[][] StartSquareFindingValues;
+int[][] StartSquareFindingValues2;
+int[][] FinishSquareFindingValues;
+int[][] FinishSquareFindingValues2;
+int[][] FinalMap;
+
+int StartSquareEndValue = 0;
+
+void setup() {
+  size(800, 800);
+  dimentions = width / num;
+
+  squareValues = new int[num][num];
+  StartSquareFindingValues = new int[num][num];
+  StartSquareFindingValues2 = new int[num][num];
+  FinishSquareFindingValues = new int[num][num];
+  FinishSquareFindingValues2 = new int[num][num];
+  FinalMap = new int[num][num];
+}
+
+void draw() {
+  background(0);
+  textAlign(CENTER, CENTER);
+  textSize(dimentions / 2);
+  for (int x = 0; x < num; x++) {
+    for (int y = 0; y < num; y++) {
+      if (((x > sx - 1) && (x <= sx)) && ((y > sy - 1) && (y <= sy))) {
+        fill(150, 50, 50);
+      } else if (squareValues[x][y] == 1) {
+        fill(75);
+      } else if (squareValues[x][y] == 2) {
+        fill(75, 150, 50);
+      } else if (squareValues[x][y] == 3) {
+        fill(50, 75, 200);
+      } else if (squareValues[x][y] == 4) {
+        fill(100, 50, 150);
+      } else {
+        fill(150);
+      }
+
+      rect(x * dimentions, y * dimentions, dimentions, dimentions);
+      fill(0);
+      text(squareValues[x][y], x * dimentions + dimentions / 2, (y * dimentions + dimentions / 2) - 0.25 * dimentions);
+      text(FinalMap[x][y], x * dimentions + dimentions / 2, (y * dimentions + dimentions / 2) + 0.2 * dimentions);
+    }
+  }
+}
+
+void mousePressed() {
+  if (mouseButton == LEFT) {
+    sx = mouseX / dimentions;
+    sy = mouseY / dimentions;
+  }
+}
+
+void keyPressed() {
+  if (keyCode == 87) {
+    if (squareValues[int(sx)][int(sy)] != 1) {
+      squareValues[int(sx)][int(sy)] = 1;
+    } else {
+      squareValues[int(sx)][int(sy)] = 0;
+    }
+  } else if (keyCode == 83) {
+    if (squareValues[int(sx)][int(sy)] != 2) {
+      squareValues[int(sx)][int(sy)] = 2;
+    } else {
+      squareValues[int(sx)][int(sy)] = 0;
+    }
+  } else if (keyCode == 70) {
+    if (squareValues[int(sx)][int(sy)] != 3) {
+      squareValues[int(sx)][int(sy)] = 3;
+    } else {
+      squareValues[int(sx)][int(sy)] = 0;
+    }
+  } else if (keyCode == 32) {
+    finished = false;
+    floodingAlg();
+  }
+}
+
+void floodingAlg() {
+  // first set all startsquares to 1...
+  for (int x = 0; x < num; x++) {
+    for (int y = 0; y < num; y++) {
+      if (squareValues[x][y] == 2) {
+        StartSquareFindingValues[x][y] = 1;
+      }
+    }
+  }
+  
+  while (finishedWithStart == false) {
+    //1 layer of even numbers down on StartSquareFindingValues2...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (StartSquareFindingValues[x][y] != 0) {
+          if (x+1 <= num-1 && StartSquareFindingValues2[x+1][y] == 0 && squareValues[x+1][y] != 1) {
+            StartSquareFindingValues2[x+1][y] = 1+StartSquareFindingValues[x][y];
+          }
+          if (x-1 >= 0 && StartSquareFindingValues2[x-1][y] == 0 && squareValues[x-1][y] != 1) {
+            StartSquareFindingValues2[x-1][y] = 1+StartSquareFindingValues[x][y];
+          }
+          if (y+1 <= num-1 && StartSquareFindingValues2[x][y+1] == 0 && squareValues[x][y+1] != 1) {
+            StartSquareFindingValues2[x][y+1] = 1+StartSquareFindingValues[x][y];
+          }
+          if (y-1 >= 0 && StartSquareFindingValues2[x][y-1] == 0 && squareValues[x][y-1] != 1) {
+            StartSquareFindingValues2[x][y-1] = 1+StartSquareFindingValues[x][y];
+          }
+        }
+      }
+    }
+
+    //check if we have reacthed the finish...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (squareValues[x][y] == 3 && StartSquareFindingValues2[x][y] != 0) {
+          finishedWithStart = true;
+        }
+      }
+    }
+
+    //1 layer of odd numbers down on StartSquareFindingValues...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (StartSquareFindingValues2[x][y] != 0) {
+          if (x+1 <= num-1 && StartSquareFindingValues[x+1][y] == 0 && squareValues[x+1][y] != 1) {
+            StartSquareFindingValues[x+1][y] = 1+StartSquareFindingValues2[x][y];
+          }
+          if (x-1 >= 0 && StartSquareFindingValues[x-1][y] == 0 && squareValues[x-1][y] != 1) {
+            StartSquareFindingValues[x-1][y] = 1+StartSquareFindingValues2[x][y];
+          }
+          if (y+1 <= num-1 && StartSquareFindingValues[x][y+1] == 0 && squareValues[x][y+1] != 1) {
+            StartSquareFindingValues[x][y+1] = 1+StartSquareFindingValues2[x][y];
+          }
+          if (y-1 >= 0 && StartSquareFindingValues[x][y-1] == 0 && squareValues[x][y-1] != 1) {
+            StartSquareFindingValues[x][y-1] = 1+StartSquareFindingValues2[x][y];
+          }
+        }
+      }
+    }
+
+    //check if we have reacthed the finish...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (squareValues[x][y] == 3 && StartSquareFindingValues[x][y] != 0) {
+          finishedWithStart = true;
+        }
+      }
+    }
+  }
+  
+  //set all finishsqures to 1
+  for (int x = 0; x < num; x++) {
+    for (int y = 0; y < num; y++) {
+      if (squareValues[x][y] == 3) {
+        FinishSquareFindingValues[x][y] = 1;
+      }
+    }
+  }
+
+  while (finishedWithFinish == false) {
+    //1 layer of even numbers down on FinishSquareFindingValues2...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (FinishSquareFindingValues[x][y] != 0) {
+          if (x+1 <= num-1 && FinishSquareFindingValues2[x+1][y] == 0 && squareValues[x+1][y] != 1) {
+            FinishSquareFindingValues2[x+1][y] = 1+FinishSquareFindingValues[x][y];
+          }
+          if (x-1 >= 0 && FinishSquareFindingValues2[x-1][y] == 0 && squareValues[x-1][y] != 1) {
+            FinishSquareFindingValues2[x-1][y] = 1+FinishSquareFindingValues[x][y];
+          }
+          if (y+1 <= num-1 && FinishSquareFindingValues2[x][y+1] == 0 && squareValues[x][y+1] != 1) {
+            FinishSquareFindingValues2[x][y+1] = 1+FinishSquareFindingValues[x][y];
+          }
+          if (y-1 >= 0 && FinishSquareFindingValues2[x][y-1] == 0 && squareValues[x][y-1] != 1) {
+            FinishSquareFindingValues2[x][y-1] = 1+FinishSquareFindingValues[x][y];
+          }
+        }
+      }
+    }
+
+    //check if we have reacthed the start...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (squareValues[x][y] == 2 && FinishSquareFindingValues2[x][y] != 0) {
+          finishedWithFinish = true;
+        }
+      }
+    }
+
+    //1 layer of odd numbers down on FinishSquareFindingValues...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (FinishSquareFindingValues2[x][y] != 0) {
+          if (x+1 <= num-1 && FinishSquareFindingValues[x+1][y] == 0 && squareValues[x+1][y] != 1) {
+            FinishSquareFindingValues[x+1][y] = 1+FinishSquareFindingValues2[x][y];
+          }
+          if (x-1 >= 0 && FinishSquareFindingValues[x-1][y] == 0 && squareValues[x-1][y] != 1) {
+            FinishSquareFindingValues[x-1][y] = 1+FinishSquareFindingValues2[x][y];
+          }
+          if (y+1 <= num-1 && FinishSquareFindingValues[x][y+1] == 0 && squareValues[x][y+1] != 1) {
+            FinishSquareFindingValues[x][y+1] = 1+FinishSquareFindingValues2[x][y];
+          }
+          if (y-1 >= 0 && FinishSquareFindingValues[x][y-1] == 0 && squareValues[x][y-1] != 1) {
+            FinishSquareFindingValues[x][y-1] = 1+FinishSquareFindingValues2[x][y];
+          }
+        }
+      }
+    }
+
+    //check if we have reacthed the start...
+    for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (squareValues[x][y] == 2 && FinishSquareFindingValues[x][y] != 0) {
+          finishedWithFinish = true;
+          print("2");
+        }
+      }
+    }
+  }
+  
+  //make the final map...
+  for (int x = 0; x < num; x++) {
+    for (int y = 0; y < num; y++) {
+      FinalMap[x][y] = StartSquareFindingValues[x][y]+StartSquareFindingValues2[x][y]+FinishSquareFindingValues[x][y]+FinishSquareFindingValues2[x][y];
+    }
+  }
+  
+  //Now highlight the route with squareValues[x][y] == 4:
+  
+  //first we find the value of the start square...
+  for (int x = 0; x < num; x++) {
+    for (int y = 0; y < num; y++) {
+      if (squareValues[x][y] == 2) {
+          StartSquareEndValue = StartSquareFindingValues[x][y]+StartSquareFindingValues2[x][y]+FinishSquareFindingValues[x][y]+FinishSquareFindingValues2[x][y];
+        }
+    }
+  }
+  
+  //Now we set all Squares with the same value as StartSquareEndValue to squareValues[x][y] == 4...
+  for (int x = 0; x < num; x++) {
+      for (int y = 0; y < num; y++) {
+        if (StartSquareFindingValues[x][y]+StartSquareFindingValues2[x][y]+FinishSquareFindingValues[x][y]+FinishSquareFindingValues2[x][y] == StartSquareEndValue) {
+          squareValues[x][y] = 4;
+        }
+      }
+    }
+  
+}
